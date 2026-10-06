@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>AI Creative Studio — Seedance 2.0</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+body{
+  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+.glass{
+  backdrop-filter:blur(16px);
+}
+.hidden{
+  display:none!important;
+}
+</style>
+</head>
+
+<body class="bg-slate-950 text-white min-h-screen">
+
+<header class="sticky top-0 z-50 border-b border-slate-800 bg-slate-950/90 glass">
+  <div class="max-w-xl mx-auto px-4 py-4 flex items-center justify-between">
+
+    <div>
+      <h1 class="font-bold text-lg">AI Creative Studio</h1>
+      <p class="text-xs text-slate-400">
+        Seedance 2.0 • Mobile Studio
+      </p>
+    </div>
+
+    <span class="text-xs px-3 py-1 rounded-full
+                 bg-indigo-500/10 text-indigo-300
+                 border border-indigo-500/30">
+      SEEDANCE
+    </span>
+
+  </div>
+</header>
+
+
+<main class="max-w-xl mx-auto px-4 py-5 space-y-5">
+
+
+<!-- API KEY -->
+
+<section class="rounded-3xl border border-amber-500/20
+                bg-amber-500/5 p-4">
+
+  <div class="flex gap-3">
+
+    <div class="text-amber-400 text-xl">🔑</div>
+
+    <div class="flex-1">
+
+      <h2 class="font-semibold text-sm">
+        Seedance API Key
+      </h2>
+
+      <p class="text-xs text-slate-400 mt-1">
+        Masukkan FAL API key untuk testing.
+        Key ini hanya disimpan dalam sesi browser.
+      </p>
+
+      <input
+        id="apiKey"
+        type="password"
+        placeholder="Masukkan FAL_KEY..."
+        class="mt-3 w-full rounded-xl border border-slate-700
+               bg-slate-950 p-3 text-sm outline-none
+               focus:border-indigo-500"
+      >
+
+      <button
+        onclick="saveKey()"
+        class="mt-3 w-full rounded-xl bg-slate-800 py-3
+               text-sm font-semibold">
+        Simpan API Key
+      </button>
+
+      <p id="keyStatus"
+         class="text-xs text-emerald-400 mt-2 hidden">
+        ✓ API key disimpan untuk sesi ini.
+      </p>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- MODE -->
+
+<section>
+
+  <div class="grid grid-cols-2
+              bg-slate-900 border border-slate-800
+              rounded-2xl p-1">
+
+    <button
+      id="imgTab"
+      onclick="setMode('img2vid')"
+      class="rounded-xl bg-indigo-600 py-3
+             text-sm font-semibold">
+
+      🖼️ Image → Video
+
+    </button>
+
+    <button
+      id="cloneTab"
+      onclick="setMode('clone')"
+      class="rounded-xl py-3 text-sm font-semibold
+             text-slate-400">
+
+      🎭 Video Clone
+
+    </button>
+
+  </div>
+
+</section>
+
+
+<!-- MAIN FORM -->
+
+<section class="rounded-3xl border border-slate-800
+                bg-slate-900/70 p-4 shadow-2xl">
+
+
+<!-- IMAGE -->
+
+<div class="mb-5">
+
+  <label class="block text-sm font-semibold mb-2">
+    Reference Image
+  </label>
+
+  <input
+    id="imageInput"
+    type="file"
+    accept="image/png,image/jpeg,image/webp"
+    class="w-full rounded-2xl border border-dashed
+           border-slate-700 bg-slate-950 p-4
+           text-sm"
+  >
+
+  <img
+    id="imagePreview"
+    class="hidden mt-3 w-full max-h-72
+           object-contain rounded-2xl bg-black"
+  >
+
+</div>
+
+
+<!-- VIDEO -->
+
+<div id="videoSection" class="hidden mb-5">
+
+  <label class="block text-sm font-semibold mb-2">
+    Reference Video
+  </label>
+
+  <input
+    id="videoInput"
+    type="file"
+    accept="video/mp4,video/quicktime,video/webm"
+    class="w-full rounded-2xl border border-dashed
+           border-slate-700 bg-slate-950 p-4
+           text-sm"
+  >
+
+  <video
+    id="videoPreview"
+    class="hidden mt-3 w-full max-h-72
+           rounded-2xl bg-black"
+    controls
+    playsinline>
+  </video>
+
+  <p class="text-xs text-slate-500 mt-2">
+    Untuk clone, video ini digunakan sebagai reference
+    motion, timing dan camera movement.
+  </p>
+
+</div>
+
+
+<!-- PROMPT -->
+
+<div>
+
+  <label class="block text-sm font-semibold mb-2">
+    Prompt
+  </label>
+
+  <textarea
+    id="prompt"
+    rows="6"
+    placeholder="Contoh:
+
+Create a cinematic photorealistic video.
+Preserve the exact identity and appearance of
+the reference subject.
+
+The subject moves naturally and slowly.
+Subtle facial expression, natural blinking,
+realistic breathing and realistic hair movement.
+
+Cinematic camera movement, realistic lighting,
+natural skin texture, no identity distortion."
+    class="w-full rounded-2xl border border-slate-700
+           bg-slate-950 p-4 text-sm resize-none
+           outline-none focus:border-indigo-500">
+  </textarea>
+
+</div>
+
+
+<!-- SETTINGS -->
+
+<div class="grid grid-cols-2 gap-3 mt-5">
+
+  <div>
+
+    <label class="text-xs text-slate-400">
+      Aspect Ratio
+    </label>
+
+    <select
+      id="ratio"
+      class="mt-2 w-full rounded-xl
+             border border-slate-700
+             bg-slate-950 p-3 text-sm">
+
+      <option value="9:16">9:16 — Portrait</option>
+      <option value="16:9">16:9 — Landscape</option>
+      <option value="1:1">1:1 — Square</option>
+      <option value="4:3">4:3</option>
+      <option value="3:4">3:4</option>
+      <option value="21:9">21:9</option>
+
+    </select>
+
+  </div>
+
+
+  <div>
+
+    <label class="text-xs text-slate-400">
+      Duration
+    </label>
+
+    <select
+      id="duration"
+      class="mt-2 w-full rounded-xl
+             border border-slate-700
+             bg-slate-950 p-3 text-sm">
+
+      <option value="5">5 seconds</option>
+      <option value="6">6 seconds</option>
+      <option value="8">8 seconds</option>
+      <option value="10">10 seconds</option>
+      <option value="12">12 seconds</option>
+      <option value="15">15 seconds</option>
+
+    </select>
+
+  </div>
+
+</div>
+
+
+<div class="grid grid-cols-2 gap-3 mt-3">
+
+  <div>
+
+    <label class="text-xs text-slate-400">
+      Resolution
+    </label>
+
+    <select
+      id="resolution"
+      class="mt-2 w-full rounded-xl
+             border border-slate-700
+             bg-slate-950 p-3 text-sm">
+
+      <option value="720p">720p</option>
+      <option value="1080p">1080p</option>
+      <option value="480p">480p</option>
+
+    </select>
+
+  </div>
+
+
+  <div>
+
+    <label class="text-xs text-slate-400">
+      Speed
+    </label>
+
+    <select
+      id="speed"
+      class="mt-2 w-full rounded-xl
+             border border-slate-700
+             bg-slate-950 p-3 text-sm">
+
+      <option value="fast">Fast</option>
+      <option value="standard">Standard</option>
+
+    </select>
+
+  </div>
+
+</div>
+
+
+<label class="flex items-center gap-3 mt-4 text-sm">
+
+  <input
+    id="audio"
+    type="checkbox"
+    checked
+    class="w-4 h-4">
+
+  Generate synchronized audio
+
+</label>
+
+
+<!-- GENERATE -->
+
+<button
+  id="generateButton"
+  onclick="generateVideo()"
+  class="mt-5 w-full rounded-2xl
+         bg-gradient-to-r from-indigo-600
+         to-purple-600 py-4
+         font-bold shadow-xl">
+
+  ✨ Generate with Seedance 2.0
+
+</button>
+
+
+<!-- STATUS -->
+
+<div
+  id="statusBox"
+  class="hidden mt-5 rounded-2xl
+         border border-slate-700
+         bg-slate-950 p-4">
+
+  <p id="statusText"
+     class="text-sm">
+    Preparing...
+  </p>
+
+  <div class="mt-3 h-2 rounded-full
+              bg-slate-800 overflow-hidden">
+
+    <div
+      id="progressBar"
+      class="h-full w-0 bg-indigo-500
+             transition-all">
+    </div>
+
+  </div>
+
+</div>
+
+</section>
+
+
+<!-- RESULT -->
+
+<section
+  id="resultBox"
+  class="hidden rounded-3xl
+         border border-slate-800
+         bg-slate-900/70 p-4">
+
+  <h2 class="font-bold mb-4">
+    🎬 Video Siap
+  </h2>
+
+  <video
+    id="resultVideo"
+    controls
+    playsinline
+    class="w-full rounded-2xl bg-black">
+  </video>
+
+  <a
+    id="downloadButton"
+    target="_blank"
+    download="seedance-video.mp4"
+    class="block mt-4 text-center
+           rounded-2xl bg-emerald-600
+           py-4 font-bold">
+
+    ⬇️ Download MP4
+
+  </a>
+
+</section>
+
+
+<footer class="text-center text-xs
+               text-slate-600 pb-8">
+
+  AI Creative Studio • Seedance 2.0
+
+</footer>
+
+</main>
+
+
+<script type="module">
+
+/*
+====================================================
+ AI CREATIVE STUDIO
+ SEEDANCE 2.0
+ SINGLE FILE MOBILE VERSION
+====================================================
+*/
+
+import { fal } from
+"https://esm.sh/@fal-ai/client";
+
+
+let mode = "img2vid";
+
+
+/* --------------------------------
+   HELPERS
+-------------------------------- */
+
+const $ = id =>
+document.getElementById(id);
+
+
+function saveKey(){
+
+  const key = $("apiKey").value.trim();
+
+  if(!key){
+
+    alert("Sila masukkan API key.");
+
+    return;
+
+  }
+
+  sessionStorage.setItem(
+    "FAL_KEY",
+    key
+  );
+
+  $("keyStatus")
+    .classList
+    .remove("hidden");
+
+}
+
+
+function getKey(){
+
+  return sessionStorage.getItem(
+    "FAL_KEY"
+  );
+
+}
+
+
+/* --------------------------------
+   MODE
+-------------------------------- */
+
+window.setMode = function(newMode){
+
+  mode = newMode;
+
+  const img =
+    $("imgTab");
+
+  const clone =
+    $("cloneTab");
+
+  if(mode === "img2vid"){
+
+    img.className =
+      "rounded-xl bg-indigo-600 py-3 text-sm font-semibold";
+
+    clone.className =
+      "rounded-xl py-3 text-sm font-semibold text-slate-400";
+
+    $("videoSection")
+      .classList
+      .add("hidden");
+
+  }else{
+
+    clone.className =
+      "rounded-xl bg-indigo-600 py-3 text-sm font-semibold";
+
+    img.className =
+      "rounded-xl py-3 text-sm font-semibold text-slate-400";
+
+    $("videoSection")
+      .classList
+      .remove("hidden");
+
+  }
+
+};
+
+
+/* --------------------------------
+   PREVIEWS
+-------------------------------- */
+
+$("imageInput")
+.addEventListener("change", e => {
+
+  const file =
+    e.target.files[0];
+
+  if(!file) return;
+
+  const url =
+    URL.createObjectURL(file);
+
+  $("imagePreview").src = url;
+
+  $("imagePreview")
+    .classList
+    .remove("hidden");
+
+});
+
+
+$("videoInput")
+.addEventListener("change", e => {
+
+  const file =
+    e.target.files[0];
+
+  if(!file) return;
+
+  const url =
+    URL.createObjectURL(file);
+
+  $("videoPreview").src = url;
+
+  $("videoPreview")
+    .classList
+    .remove("hidden");
+
+});
+
+
+/* --------------------------------
+   PROGRESS
+-------------------------------- */
+
+function progress(
+  percent,
+  text
+){
+
+  $("statusBox")
+    .classList
+    .remove("hidden");
+
+  $("statusText")
+    .textContent = text;
+
+  $("progressBar")
+    .style.width =
+    percent + "%";
+
+}
+
+
+/* --------------------------------
+   GENERATE
+-------------------------------- */
+
+window.generateVideo =
+async function(){
+
+  try{
+
+    const apiKey =
+      getKey();
+
+    if(!apiKey){
+
+      alert(
+        "Masukkan FAL API Key dahulu."
+      );
+
+      return;
+
+    }
+
+
+    const prompt =
+      $("prompt")
+      .value
+      .trim();
+
+    if(!prompt){
+
+      alert(
+        "Sila masukkan prompt."
+      );
+
+      return;
+
+    }
+
+
+    const imageFile =
+      $("imageInput")
+      .files[0];
+
+    if(!imageFile){
+
+      alert(
+        "Sila pilih reference image."
+      );
+
+      return;
+
+    }
+
+
+    const videoFile =
+      $("videoInput")
+      .files[0];
+
+
+    if(
+      mode === "clone" &&
+      !videoFile
+    ){
+
+      alert(
+        "Video Clone memerlukan reference video."
+      );
+
+      return;
+
+    }
+
+
+    $("generateButton")
+      .disabled = true;
+
+    $("generateButton")
+      .classList
+      .add("opacity-50");
+
+
+    /*
+      Configure fal.ai
+    */
+
+    fal.config({
+      credentials: apiKey
+    });
+
+
+    /*
+      Upload image
+    */
+
+    progress(
+      10,
+      "Uploading reference image..."
+    );
+
+
+    const imageUrl =
+      await fal.storage.upload(
+        imageFile
+      );
+
+
+    /*
+      Video Clone
+    */
+
+    if(mode === "clone"){
+
+      progress(
+        25,
+        "Uploading reference video..."
+      );
+
+
+      const videoUrl =
+        await fal.storage.upload(
+          videoFile
+        );
+
+
+      progress(
+        35,
+        "Menghantar job ke Seedance..."
+      );
+
+
+      const model =
+        $("speed").value === "fast"
+        ?
+        "bytedance/seedance-2.0/fast/reference-to-video"
+        :
+        "bytedance/seedance-2.0/reference-to-video";
+
+
+      const result =
+        await fal.subscribe(
+          model,
+          {
+
+            input:{
+
+              prompt,
+
+              image_urls:[
+                imageUrl
+              ],
+
+              video_urls:[
+                videoUrl
+              ],
+
+              aspect_ratio:
+                $("ratio").value,
+
+              duration:
+                $("duration").value,
+
+              resolution:
+                $("resolution").value,
+
+              generate_audio:
+                $("audio").checked
+
+            },
+
+            pollInterval:3000,
+
+            logs:false,
+
+            onEnqueue(){
+              progress(
+                40,
+                "Seedance queue..."
+              );
+            },
+
+            onQueueUpdate(update){
+
+              if(
+                update.status ===
+                "IN_PROGRESS"
+              ){
+
+                progress(
+                  70,
+                  "Seedance sedang menghasilkan video..."
+                );
+
+              }
+
+            }
+
+          }
+        );
+
+
+      finish(
+        result
+      );
+
+    }
+
+    /*
+      Image → Video
+    */
+
+    else{
+
+      progress(
+        35,
+        "Menghantar image ke Seedance..."
+      );
+
+
+      const model =
+        $("speed").value === "fast"
+        ?
+        "bytedance/seedance-2.0/fast/image-to-video"
+        :
+        "bytedance/seedance-2.0/image-to-video";
+
+
+      const result =
+        await fal.subscribe(
+          model,
+          {
+
+            input:{
+
+              prompt,
+
+              image_url:
+                imageUrl,
+
+              aspect_ratio:
+                $("ratio").value,
+
+              duration:
+                $("duration").value,
+
+              resolution:
+                $("resolution").value,
+
+              generate_audio:
+                $("audio").checked
+
+            },
+
+            pollInterval:3000,
+
+            logs:false,
+
+            onEnqueue(){
+
+              progress(
+                45,
+                "Seedance queue..."
+              );
+
+            },
+
+            onQueueUpdate(update){
+
+              if(
+                update.status ===
+                "IN_PROGRESS"
+              ){
+
+                progress(
+                  75,
+                  "Seedance sedang menghasilkan video..."
+                );
+
+              }
+
+            }
+
+          }
+        );
+
+
+      finish(
+        result
+      );
+
+    }
+
+
+  }catch(error){
+
+    console.error(error);
+
+    progress(
+      0,
+      "❌ " +
+      (
+        error?.message ||
+        "Generation gagal."
+      )
+    );
+
+    alert(
+      error?.message ||
+      "Generation gagal."
+    );
+
+  }
+
+
+  $("generateButton")
+    .disabled = false;
+
+  $("generateButton")
+    .classList
+    .remove("opacity-50");
+
+};
+
+
+/* --------------------------------
+   RESULT
+-------------------------------- */
+
+function finish(result){
+
+  progress(
+    100,
+    "✓ Video siap!"
+  );
+
+
+  const data =
+    result?.data ||
+    result;
+
+
+  const video =
+    data?.video;
+
+
+  const url =
+    video?.url ||
+    data?.video_url;
+
+
+  if(!url){
+
+    throw new Error(
+      "Seedance tidak mengembalikan URL video."
+    );
+
+  }
+
+
+  $("resultVideo")
+    .src = url;
+
+
+  $("downloadButton")
+    .href = url;
+
+
+  $("resultBox")
+    .classList
+    .remove("hidden");
+
+
+  $("resultBox")
+    .scrollIntoView({
+      behavior:"smooth"
+    });
+
+}
+
+
+/* --------------------------------
+   RESTORE KEY STATUS
+-------------------------------- */
+
+if(getKey()){
+
+  $("keyStatus")
+    .classList
+    .remove("hidden");
+
+}
+
+</script>
+
+</body>
+</html>
