@@ -1,60 +1,342 @@
-<!doctype html>
-<html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AI Creative Studio • Wan 2.2 Free</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<style>
-body{background:#070b14;color:#e5e7eb}.glass{background:rgba(17,24,39,.75);border:1px solid #263244;backdrop-filter:blur(12px)}
-.drop{border:2px dashed #334155}.drop.drag{border-color:#818cf8;background:#111936}button:disabled{opacity:.5}
-</style></head>
-<body class="min-h-screen"><main class="max-w-4xl mx-auto p-4 md:p-6">
-<header class="mb-5"><h1 class="text-3xl font-bold">AI Creative Studio</h1>
-<p class="text-slate-400">Wan 2.2 Image → Video • Free ZeroGPU</p></header>
-<section class="glass rounded-2xl p-4 md:p-6">
-<div id="drop" class="drop rounded-2xl p-8 text-center cursor-pointer">
-<input id="file" type="file" accept="image/*" class="hidden">
-<div id="empty"><div class="text-4xl">🖼️</div><p class="font-semibold mt-2">Upload reference image</p><p class="text-xs text-slate-500">JPG, PNG or WEBP</p></div>
-<div id="preview" class="hidden"><img id="img" class="max-h-72 mx-auto rounded-xl"><p id="name" class="text-xs text-slate-400 mt-2"></p></div></div>
-<label class="block text-sm font-medium mt-5">Motion prompt</label>
-<textarea id="prompt" rows="4" class="w-full mt-2 rounded-xl bg-slate-950 border border-slate-700 p-3">make this image come alive, cinematic motion, smooth animation</textarea>
-<div class="grid md:grid-cols-2 gap-4 mt-5">
-<div><label class="text-sm">Duration <span id="dv">3.5s</span></label><input id="duration" type="range" min=".5" max="5" step=".1" value="3.5" class="w-full"></div>
-<div><label class="text-sm">Steps <span id="sv">6</span></label><input id="steps" type="range" min="1" max="8" step="1" value="6" class="w-full"></div></div>
-<details class="mt-5 border border-slate-800 rounded-xl p-4"><summary>Advanced settings</summary>
-<div class="grid md:grid-cols-2 gap-4 mt-4">
-<label class="text-sm">Guidance<input id="g1" type="number" min="0" max="10" step=".5" value="1" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded-lg p-2"></label>
-<label class="text-sm">Guidance 2<input id="g2" type="number" min="0" max="10" step=".5" value="1" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded-lg p-2"></label>
-<label class="text-sm md:col-span-2">Negative prompt<textarea id="neg" rows="3" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded-lg p-2">色调艳丽, 过曝, 静态, 细节模糊不清, 字幕, 风格, 作品, 画作, 画面, 静止, 整体发灰, 最差质量, 低质量, JPEG压缩残留, 丑陋的, 残缺的, 多余的手指, 静止不动的画面, 杂乱的背景, 三条腿, 背景人很多, 倒着走</textarea></label>
-<label class="text-sm">Seed<input id="seed" type="number" min="0" max="2147483647" value="42" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded-lg p-2"></label>
-<label class="flex items-center gap-2 mt-6 text-sm"><input id="random" type="checkbox" checked> Randomize seed</label>
-</div></details>
-<button id="go" class="w-full mt-6 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-semibold">Generate Video</button>
-<div id="status" class="hidden mt-4 rounded-xl border p-4 text-sm"></div>
-<div id="out" class="hidden mt-5"><h2 class="font-semibold mb-2">Generated video</h2><video id="video" controls autoplay loop playsinline class="w-full rounded-xl bg-black"></video><a id="link" target="_blank" class="inline-block mt-3 text-indigo-300">Open video ↗</a></div>
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#070b14">
+  <title>AI Creative Studio — Wan 2.2</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body{background:#070b14;color:#e5e7eb}
+    .glass{background:rgba(15,23,42,.78);border:1px solid rgba(148,163,184,.16);backdrop-filter:blur(14px)}
+    .drop{border:2px dashed #334155}
+    .drop.drag{border-color:#818cf8;background:rgba(99,102,241,.08)}
+    button:disabled{opacity:.5;cursor:not-allowed}
+  </style>
+</head>
+<body class="min-h-screen">
+<main class="max-w-4xl mx-auto px-4 py-6">
+
+<header class="mb-6">
+  <div class="flex items-start justify-between gap-3">
+    <div>
+      <h1 class="text-2xl md:text-3xl font-bold">AI Creative Studio</h1>
+      <p class="text-sm text-slate-400 mt-1">Wan 2.2 • Image → Video • ZeroGPU</p>
+    </div>
+    <a href="https://huggingface.co/spaces/zerogpu-aoti/wan2-2-fp8da-aoti-faster"
+       target="_blank" rel="noopener"
+       class="text-xs px-3 py-2 rounded-xl border border-slate-700 hover:bg-slate-800">
+      Model Space ↗
+    </a>
+  </div>
+</header>
+
+<section class="glass rounded-3xl p-4 md:p-6">
+
+  <div class="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4 mb-5">
+    <div class="flex gap-3">
+      <span class="text-xl">🆓</span>
+      <div>
+        <p class="font-semibold text-sm">FAL API Key tidak diperlukan</p>
+        <p class="text-xs text-slate-400 mt-1">
+          Generator ini menggunakan public Hugging Face ZeroGPU Space.
+          Jika queue penuh, cuba semula selepas beberapa ketika.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div id="dropZone" class="drop rounded-2xl p-7 text-center cursor-pointer transition">
+    <input id="imageInput" type="file" accept="image/png,image/jpeg,image/webp" class="hidden">
+    <div id="emptyUpload">
+      <div class="text-4xl">🖼️</div>
+      <p class="font-semibold mt-2">Upload reference image</p>
+      <p class="text-xs text-slate-500 mt-1">JPG, PNG atau WEBP</p>
+    </div>
+    <div id="imagePreviewWrap" class="hidden">
+      <img id="imagePreview" class="max-h-72 max-w-full mx-auto rounded-2xl object-contain" alt="Image preview">
+      <p id="fileName" class="text-xs text-slate-400 mt-2"></p>
+      <button id="changeImage" type="button" class="mt-3 text-xs text-indigo-300">Tukar gambar</button>
+    </div>
+  </div>
+
+  <div class="mt-5">
+    <label class="text-sm font-semibold">Motion Prompt</label>
+    <textarea id="prompt" rows="5"
+      class="mt-2 w-full rounded-2xl bg-slate-950 border border-slate-700 p-4 outline-none focus:border-indigo-500 resize-none"
+      placeholder="Describe movement, camera motion, lighting and atmosphere...">make this image come alive, natural subtle movement, cinematic camera motion, realistic lighting, smooth motion</textarea>
+  </div>
+
+  <div class="grid md:grid-cols-2 gap-4 mt-5">
+    <div>
+      <div class="flex justify-between text-sm">
+        <label>Duration</label>
+        <span id="durationValue" class="text-indigo-300">3.5s</span>
+      </div>
+      <input id="duration" type="range" min="0.5" max="5" step="0.1" value="3.5" class="w-full mt-3">
+      <p class="text-xs text-slate-500 mt-1">Model Space semasa mengehadkan duration.</p>
+    </div>
+
+    <div>
+      <div class="flex justify-between text-sm">
+        <label>Inference Steps</label>
+        <span id="stepsValue" class="text-indigo-300">6</span>
+      </div>
+      <input id="steps" type="range" min="1" max="30" step="1" value="6" class="w-full mt-3">
+      <p class="text-xs text-slate-500 mt-1">4–8 biasanya lebih sesuai untuk Lightning.</p>
+    </div>
+  </div>
+
+  <details class="mt-5 rounded-2xl border border-slate-800 p-4">
+    <summary class="cursor-pointer text-sm font-semibold">Advanced Settings</summary>
+
+    <div class="grid md:grid-cols-2 gap-4 mt-4">
+      <div>
+        <label class="text-xs text-slate-400">Guidance Scale</label>
+        <input id="guidanceScale" type="number" min="0" max="10" step="0.5" value="1"
+          class="mt-2 w-full rounded-xl bg-slate-950 border border-slate-700 p-3">
+      </div>
+
+      <div>
+        <label class="text-xs text-slate-400">Guidance Scale 2</label>
+        <input id="guidanceScale2" type="number" min="0" max="10" step="0.5" value="1"
+          class="mt-2 w-full rounded-xl bg-slate-950 border border-slate-700 p-3">
+      </div>
+
+      <div class="md:col-span-2">
+        <label class="text-xs text-slate-400">Negative Prompt</label>
+        <textarea id="negativePrompt" rows="4"
+          class="mt-2 w-full rounded-xl bg-slate-950 border border-slate-700 p-3 resize-none">色调艳丽, 过曝, 静态, 细节模糊不清, 字幕, 风格, 作品, 画作, 画面, 静止, 整体发灰, 最差质量, 低质量, JPEG压缩残留, 丑陋的, 残缺的, 多余的手指, 画得不好的手部, 画得不好的脸部, 畸形的, 毁容的, 形态畸形的肢体, 手指融合, 静止不动的画面, 杂乱的背景, 三条腿, 背景人很多, 倒着走</textarea>
+      </div>
+
+      <div>
+        <label class="text-xs text-slate-400">Seed</label>
+        <input id="seed" type="number" min="0" max="2147483647" value="42"
+          class="mt-2 w-full rounded-xl bg-slate-950 border border-slate-700 p-3">
+      </div>
+
+      <label class="flex items-center gap-3 mt-7 text-sm">
+        <input id="randomizeSeed" type="checkbox" checked class="w-4 h-4">
+        Randomize seed
+      </label>
+    </div>
+  </details>
+
+  <button id="generateButton" type="button"
+    class="w-full mt-6 py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 font-bold">
+    ✨ Generate Video
+  </button>
+
+  <div id="statusBox" class="hidden mt-5 rounded-2xl border border-slate-800 bg-slate-950 p-4">
+    <div class="flex items-center gap-3">
+      <span id="statusIcon">⏳</span>
+      <p id="statusText" class="text-sm">Preparing...</p>
+    </div>
+    <div class="mt-3 h-2 rounded-full bg-slate-800 overflow-hidden">
+      <div id="progressBar" class="h-full w-0 bg-indigo-500 transition-all duration-500"></div>
+    </div>
+  </div>
+
+  <section id="resultBox" class="hidden mt-6">
+    <div class="flex justify-between items-center mb-3">
+      <h2 class="font-bold">🎬 Generated Video</h2>
+      <span id="seedResult" class="text-xs text-slate-500"></span>
+    </div>
+
+    <video id="resultVideo" controls playsinline class="w-full rounded-2xl bg-black"></video>
+
+    <a id="openVideoButton" target="_blank" rel="noopener"
+       class="block mt-4 text-center rounded-2xl border border-slate-700 py-3 text-sm hover:bg-slate-800">
+      Open Video ↗
+    </a>
+  </section>
+
 </section>
-<p class="text-xs text-slate-500 text-center mt-4">No FAL API key. Uses a public Hugging Face ZeroGPU Space; availability depends on its shared queue.</p>
+
+<footer class="text-center text-xs text-slate-600 py-6">
+  AI Creative Studio • Wan 2.2 I2V • Public ZeroGPU
+</footer>
 </main>
+
 <script type="module">
-import {Client,handle_file} from "https://esm.sh/@gradio/client";
-const SPACE="zerogpu-aoti/wan2-2-fp8da-aoti-faster"; let selected=null;
-const $=id=>document.getElementById(id);
-function setImage(f){if(!f||!f.type.startsWith("image/"))return;selected=f;$("empty").classList.add("hidden");$("preview").classList.remove("hidden");$("img").src=URL.createObjectURL(f);$("name").textContent=f.name}
-$("drop").onclick=()=>$("file").click();$("file").onchange=e=>setImage(e.target.files?.[0]);
-["dragenter","dragover"].forEach(x=>$("drop").addEventListener(x,e=>{e.preventDefault();$("drop").classList.add("drag")}));
-["dragleave","drop"].forEach(x=>$("drop").addEventListener(x,e=>{e.preventDefault();$("drop").classList.remove("drag")}));
-$("drop").addEventListener("drop",e=>setImage(e.dataTransfer.files?.[0]));
-$("duration").oninput=()=>$("dv").textContent=$("duration").value+"s";$("steps").oninput=()=>$("sv").textContent=$("steps").value;
-function status(s,err=false){$("status").className="mt-4 rounded-xl border p-4 text-sm "+(err?"border-red-500/30 bg-red-950/30 text-red-200":"border-indigo-500/30 bg-indigo-950/30 text-indigo-200");$("status").textContent=s}
-$("go").onclick=async()=>{
-if(!selected){status("Please upload an image first.",true);return}
-$("go").disabled=true;$("out").classList.add("hidden");
-try{
-status("Connecting to Wan 2.2 ZeroGPU…");const c=await Client.connect(SPACE);
-status("Uploading image and starting generation…");
-const r=await c.predict("/generate_video",{input_image:await handle_file(selected),prompt:$("prompt").value.trim(),steps:+$("steps").value,negative_prompt:$("neg").value,duration_seconds:+$("duration").value,guidance_scale:+$("g1").value,guidance_scale_2:+$("g2").value,seed:+$("seed").value,randomize_seed:$("random").checked});
-const v=r?.data?.[0],seed=r?.data?.[1];const url=typeof v==="string"?v:(v?.url||v?.path);if(!url)throw Error("No video URL returned.");
-$("video").src=url;$("link").href=url;$("link").textContent="Open video ↗ (seed "+(seed??"unknown")+")";$("out").classList.remove("hidden");status("Video generated successfully.");
-}catch(e){console.error(e);status("Generation failed: "+(e?.message||e)+". The public Space may be busy or temporarily unavailable; try again.",true)}
-finally{$("go").disabled=false}
-};
-</script></body></html>
+import { Client, handle_file } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
+
+const SPACE = "zerogpu-aoti/wan2-2-fp8da-aoti-faster";
+const $ = id => document.getElementById(id);
+
+let selectedImage = null;
+
+function showStatus(message, type = "info", progress = null) {
+  $("statusBox").classList.remove("hidden");
+  $("statusText").textContent = message;
+
+  $("statusIcon").textContent =
+    type === "success" ? "✅" :
+    type === "error" ? "❌" : "⏳";
+
+  if (progress !== null) {
+    $("progressBar").style.width = Math.max(0, Math.min(100, progress)) + "%";
+  }
+}
+
+function setImage(file) {
+  if (!file || !file.type.startsWith("image/")) {
+    showStatus("Sila pilih fail gambar JPG, PNG atau WEBP.", "error", 0);
+    return;
+  }
+
+  selectedImage = file;
+
+  $("emptyUpload").classList.add("hidden");
+  $("imagePreviewWrap").classList.remove("hidden");
+  $("imagePreview").src = URL.createObjectURL(file);
+  $("fileName").textContent = file.name;
+}
+
+$("dropZone").addEventListener("click", e => {
+  if (e.target.id === "changeImage") return;
+  $("imageInput").click();
+});
+
+$("changeImage").addEventListener("click", e => {
+  e.stopPropagation();
+  $("imageInput").click();
+});
+
+$("imageInput").addEventListener("change", e => {
+  setImage(e.target.files?.[0]);
+});
+
+["dragenter", "dragover"].forEach(eventName => {
+  $("dropZone").addEventListener(eventName, e => {
+    e.preventDefault();
+    $("dropZone").classList.add("drag");
+  });
+});
+
+["dragleave", "drop"].forEach(eventName => {
+  $("dropZone").addEventListener(eventName, e => {
+    e.preventDefault();
+    $("dropZone").classList.remove("drag");
+  });
+});
+
+$("dropZone").addEventListener("drop", e => {
+  setImage(e.dataTransfer.files?.[0]);
+});
+
+$("duration").addEventListener("input", () => {
+  $("durationValue").textContent = $("duration").value + "s";
+});
+
+$("steps").addEventListener("input", () => {
+  $("stepsValue").textContent = $("steps").value;
+});
+
+async function generateVideo() {
+  if (!selectedImage) {
+    showStatus("Sila upload reference image dahulu.", "error", 0);
+    return;
+  }
+
+  const prompt = $("prompt").value.trim();
+
+  if (!prompt) {
+    showStatus("Sila masukkan motion prompt.", "error", 0);
+    $("prompt").focus();
+    return;
+  }
+
+  const button = $("generateButton");
+  button.disabled = true;
+  $("resultBox").classList.add("hidden");
+
+  try {
+    showStatus("Menyambung ke Hugging Face ZeroGPU…", "info", 5);
+
+    const client = await Client.connect(SPACE);
+
+    showStatus("Menghantar gambar ke Wan 2.2…", "info", 20);
+
+    const job = client.submit("/generate_video", {
+      input_image: await handle_file(selectedImage),
+      prompt: prompt,
+      steps: Number($("steps").value),
+      negative_prompt: $("negativePrompt").value,
+      duration_seconds: Number($("duration").value),
+      guidance_scale: Number($("guidanceScale").value),
+      guidance_scale_2: Number($("guidanceScale2").value),
+      seed: Number($("seed").value),
+      randomize_seed: $("randomizeSeed").checked
+    });
+
+    job.on("status", status => {
+      if (status?.status === "pending") {
+        const position = status.position ?? "?";
+        showStatus(
+          `Dalam queue ZeroGPU… posisi ${position}`,
+          "info",
+          30
+        );
+      } else if (status?.status === "generating") {
+        showStatus("Wan 2.2 sedang menghasilkan video…", "info", 65);
+      }
+    });
+
+    const result = await job.result();
+
+    showStatus("Video selesai. Memproses output…", "info", 90);
+
+    const outputVideo = result?.data?.[0];
+    const usedSeed = result?.data?.[1];
+
+    let videoUrl = null;
+
+    if (typeof outputVideo === "string") {
+      videoUrl = outputVideo;
+    } else if (outputVideo?.url) {
+      videoUrl = outputVideo.url;
+    } else if (outputVideo?.path) {
+      videoUrl = outputVideo.path;
+    }
+
+    if (!videoUrl) {
+      console.error("Unexpected Gradio response:", result);
+      throw new Error("Wan 2.2 tidak mengembalikan URL video.");
+    }
+
+    $("resultVideo").src = videoUrl;
+    $("openVideoButton").href = videoUrl;
+    $("seedResult").textContent =
+      "Seed: " + (usedSeed ?? "random");
+
+    $("resultBox").classList.remove("hidden");
+
+    showStatus("Video berjaya dihasilkan! 🎉", "success", 100);
+
+    $("resultBox").scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+
+  } catch (error) {
+    console.error("Wan 2.2 error:", error);
+
+    let message = error?.message || String(error);
+
+    if (/queue|busy|capacity|429|rate/i.test(message)) {
+      message =
+        "ZeroGPU sedang sibuk atau rate-limited. Tunggu sekejap dan cuba Generate semula.";
+    }
+
+    showStatus("Generation gagal: " + message, "error", 0);
+
+  } finally {
+    button.disabled = false;
+  }
+}
+
+$("generateButton").addEventListener("click", generateVideo);
+</script>
+</body>
+</html>
